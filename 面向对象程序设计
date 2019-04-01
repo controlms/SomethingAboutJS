@@ -1,0 +1,5 @@
+一、理解对象
+  1.  属性类型
+    1.  数据属性  
+      [[Configrable]] : 能否修改属性特性，默认为true
+      [[Enumberable]] : 
