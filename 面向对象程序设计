@@ -1,5 +1,140 @@
 一、理解对象
   1.  属性类型
     1.  数据属性  
-      [[Configrable]] : 能否修改属性特性，默认为true
-      [[Enumberable]] : 
+      [[Configurable]] : 能否修改属性特性，默认为true
+      [[Enumberable]] : 能否通过for-in循环返回属性，默认为true
+      [[Writable]]    : 能否修改属性值，默认是true
+      [[Value]]       : 包含这个属性的数据值，默认是undefined
+      
+      要改变属性的默认特性，使用Object.defineProperty()方法，此方法有三个参数
+        1.  属性所在的对象
+        2.  属性名
+        3.  描述符对象 ： configruable/enumberable/writable/value
+    2.  访问器属性
+      访问器属性包含两个函数：getter和setter，
+      访问器属性有四个特性：
+        1.  [[Configurable]]  : 表示能否通过delete删除属性而重新定义属性，能否修改属性的特性，或者能否把属性修改成数据属性
+        2.  [[Enumberable]]   : 表示能否通过for-in循环返回属性
+        3.  [[Get]]           : 在读取属性时调用的函数，默认是undefined
+        4.  [[Set]]           : 在写入属性时调用的函数，默认是undefined
+  2.  定义多个属性
+      Object.defineProperties()
+      支持此方法的浏览器是IE9+/Firefox4+/Safari5+/Opera12+/Chrome
+  3.  读取属性的特性
+      Object.getOwnPropertyDescriptor() 返回值是一个对象，有上面所提到的各种特
+二、创建对象
+  1.  工厂模式
+      function createPerson(name,age,job){
+        var o = new Object();
+        o.name = name;
+        o.age = age;
+        o.job = job;
+        o.sayName = function(){
+          alert(this.name);
+        };
+        retutn o;
+      }
+      没有解决创建对象识别的问题（即怎样知道一个对象的类型）
+  2.  构造函数你模式
+      function Person(name,age,job){
+        this.name = name;
+        this.gae = gae;
+        this.job = job;
+        this.asyName = function(){
+          alert(this.name);
+        };
+      }
+      与工厂模式的不同之处：
+        1.  没有显式的创建对象
+        2.  直接将属和方法赋予this对象
+        3.  没有return语句
+      创建对象：
+        1.  创建新对象
+        2.  将构造函数的作用于赋给新对象
+        3.  执行构造函数中的代码
+        4.  返回新对象
+      检测对象类型时，使用instanceof  : instance instanceof Object;
+      缺 点 ：每个方法都要在每个方法上重新创建一遍，导致内存损耗
+  3.  原型模式
+      我们创建的每个构造函数都存在一个prototype(原型)属性，此属性是一个指针，指向一个对象
+      ，而这个对象包含该构造函数创建的所有的instance的共有的属性和方法
+      function Person(name,age,job){
+        Person.prototype.name = name;
+        Person.prototype.age = age;
+        Person.prototype.job = job;
+        Person.prototype.sayName = function(){
+          alert(this.name);
+        }
+      }
+      
+      1.  理解原型对象
+        1.  创建一个新的函数就会为此函数创建一个prototype属性，这个属性指向函数的原型对象，
+        2.  默认情况下，所有的原型对象都会获得一个constructor(构造函数)属性，此属性指向prototype属性所在函数的指针
+        3.  当调用构造函数创建一个新的实例后，该实例内部会包含一个指针，指向构造函数的原型对象，此指针名为[[Prototype]],能通过__proto__访问
+        4.  尽管无法通过[[Prototype]]直接访问该属性，不过能通过isPrototypeOf()确定对象之间是否存在这种关系。
+            构造函数.prototype.isPrototypeOf(instance)  : 如果[Prototype]指向调用isPrototypeOf的对象，这个方法就返回ture
+        5.  可以使用Obejct.getPrototypeOf(instance)获取instance的[[Prototype]]值
+        6.  使用hasOwnProperty()检测一个属性是否存在与实例中，还是存在于原型中
+      2.  原型和 in 操作符
+        有两种方法使用in操作符：单独使用和在for-in中使用
+        1.  在单独使用时，in会在通过对象能够访问给定属性时返回true，而不论此属性存在于实例中还是原型中
+        2.  在使用for-in循环时，返回的是所有能够通过对象能访问的、可枚举(enumberated)的属性
+        
+        要取得对象上所有可枚举的实例属性，可以使用Object.keys()方法：此方法返回一个包含所有可枚举的属性的字符串数组
+        要取得对象上所有的实例属性，可以使用Object.getOwnPropertyNames()
+      3.  更简单的原型语法
+            function Person(){}
+            Person.prototype = {
+              name : "Nicholas",
+              age : 23,
+              job : "Software Engineer",
+              sayName : function(){
+                alert(this.name);
+              }
+            }
+            1.  此时constructor属性不再指向Person，而是指向Object，但是使用instance instanceof Person 仍然返回true，其实是错误的
+            2.  可以在Person.prototype中添加constructor = Person; 但是此时constructor的[[Enumberable]]特性会变成true
+            3.  为避免上面的问题可以使用前面提到的Object.defineProperty()
+                Object.defineProperty(Person.prototype,"constructor",{
+                  enumberable : false,
+                  value : Person
+                })
+        4.  原型的动态性
+          1.  由于在原型中查找值得过程是一种搜索，因此我们对原型对象所做的任何修改都能立即在实例上反映出来——即使是先创建实例后修改原型也是如此
+              究其原因 ：实例的[[Prototype]]是指向原型的指针
+          2.  重写整个原型对象时，情况会不同
+              使用new调用构造函数时会为实例添加一个指向最迟原型对象的[[Prototype]]指针，此时将原型修改为另一个对象，会切断构造函数和最初原型之间的联系，
+              此时，实例的[[Prototype]]指针仍然指向最初的原型对象。
+        5.  原生对象的原型
+        6.  原型模式的问题 ： 没有独特性
+    4.  组合使用构造函数模式和原型模式
+    5.  动态原型模式
+        function Person(name){
+          this.name = name;
+          //只有在sayName()不存在的情况下，才将它添加到原型中
+          if(typeof this.sayName != "function"){
+            Person.prototype.sayName = function(){
+              alert(this.name);
+            }
+          }
+        }
+    6.  寄生构造函数模式
+        function Person(name){
+          var o = new Object();
+          o.name = name;
+          o.sayName = function(){
+            alert(this.name);
+          }
+          return o;
+        } 
+        var person1 = new Person("Lee");
+        1.  这个模式能在特殊的情况下用来为对象创建构造函数
+        
+        尽量不要使用这种方法
+    7.  稳妥构造函数模式
+        稳妥对象 ： 没有公共属性，其方法也不引用this的对象，通常在不适用this和new的环境下使用
+三、 继承
+  
+  1.  原型链
+    
+       
