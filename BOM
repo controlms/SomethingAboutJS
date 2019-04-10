@@ -1,0 +1,33 @@
+主要内容：
+  1.  window对象
+  2.  控制窗口、框架和弹出窗口
+  3.  利用location对象中的页面信息
+  4.  使用navigator对象了解浏览器
+一、window对象
+  在浏览器中window对象有两个角色：
+    1.  通过js访问浏览器窗口一个接口
+    2.  ECMAScript制定的Global对象
+  1.  全局作用域
+    所有在全局作用域中声明的变量、函数都会变成window对象的属性和方法
+    全局变量不能通过delete删除，但是直接在window对象上定义的属性可以
+      var age = 23;
+      window.color = "red";
+      delete age;//没有效果
+      delete window.color//有效果
+      因为使用var创建的全局变量，它的[[Configurable]]值时false
+    尝试访问未声明的变量会抛出错误，但是使用window访问不会
+      console.log(aaa); // error
+      console.log(window.bbb) //undefined
+  2.  窗口关系和框架
+      如果页面中包含框架，那么每个框架都包含自己的window对象，并且保存在frames集合当中，在此集合中，每个window对象都有一个那么属性
+      使用top.frames[num]来使用这些window对象
+      window.parent/window.self/window.top
+  3.  窗口位置
+      screenTop/screenLeft
+      screenX/screenY        : Firefox
+        兼容
+          var leftPos = (typeof window.screenLeft == "number") ? window.screenLeft : window.screenX;
+          var ToptPos = (typeof window.screenTop == "number") ? window.screenTop : window.screenY;
+  4.  窗口大小
+      innerWidth/innerHeight/outerWidth/outerHeight
+          
